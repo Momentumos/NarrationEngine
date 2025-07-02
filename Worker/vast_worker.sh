@@ -97,7 +97,7 @@ check_git_installation() {
 
 # Function to clone NarrationEngine repository
 clone_narration_engine() {
-    local repo_url="https://github.com/myeganeh2876/NarrationEngine"
+    local repo_url="https://github.com/momentumos/NarrationEngine"
     local repo_name="NarrationEngine"
     
     echo -e "${BLUE}${CLONE} Cloning NarrationEngine repository...${NC}"
@@ -313,16 +313,25 @@ setup_env_file() {
         "ANTHROPIC_API_KEY"
         "GROQ_API_KEY"
         "TOGETHER_API_KEY"
+        "API_BASE_URL"
+        "SERVER_TO_SERVER_API_KEY"
+        "TTS_SERVER_URL"
         "AWS_ACCESS_KEY_ID"
         "AWS_SECRET_ACCESS_KEY"
         "AWS_REGION"
         "S3_BUCKET"
-        "API_BASE_URL"
-        "TTS_SERVER_URL"
         "MAX_WORKERS"
         "WORKER_TIMEOUT"
         "RETRY_ATTEMPTS"
         "RETRY_DELAY"
+        "DISCORD_WEBHOOK_URL"
+        "USE_RANDOM_VOICE"
+        "WORKER_PHONE"
+        "WORKER_COUNTRY"
+        "WORKER_VERIFICATION_CODE"
+        "WORKER_DEVICE_ID"
+        "WORKER_USER_AGENT"
+        "WORKER_VOICE"
     )
     
     for var_name in "${env_vars_to_check[@]}"; do
@@ -408,6 +417,7 @@ main() {
     echo
     echo -e "${YELLOW}${WARNING} Required environment variables:${NC}"
     echo "   - API_BASE_URL"
+    echo "   - SERVER_TO_SERVER_API_KEY"
     echo "   - AWS_ACCESS_KEY_ID"
     echo "   - AWS_SECRET_ACCESS_KEY"
     echo "   - S3_BUCKET"
