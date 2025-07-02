@@ -466,13 +466,15 @@ if [ -f /usr/bin/nvidia-container-runtime ]; then
     },
     "registry-mirrors": [
         "http://hub-mirror.c.163.com",
-        "http://docker.mirrors.ustc.edu.cn",
-        "http://mirror.baidubce.com"
+        "http://docker.mirrors.ustc.edu.cn"
     ],
     "insecure-registries": [
         "hub-mirror.c.163.com",
         "docker.mirrors.ustc.edu.cn",
-        "mirror.baidubce.com"
+        "mirror.baidubce.com",
+        "registry-1.docker.io",
+        "index.docker.io",
+        "docker.io"
     ],
     "storage-driver": "vfs",
     "iptables": false,
@@ -480,11 +482,24 @@ if [ -f /usr/bin/nvidia-container-runtime ]; then
     "ip-forward": false,
     "ip-masq": false,
     "userland-proxy": false,
-    "max-concurrent-downloads": 3,
-    "max-download-attempts": 5,
-    "dns": ["8.8.8.8", "114.114.114.114"]
+    "max-concurrent-downloads": 1,
+    "max-download-attempts": 3,
+    "dns": ["8.8.8.8", "114.114.114.114"],
+    "live-restore": false,
+    "experimental": false,
+    "features": {
+        "buildkit": false
+    }
 }
 EOF
+    
+    # Add hosts file entries to block Docker Hub and force mirror usage
+    echo "🔧 Configuring hosts file to force mirror usage..."
+    echo "127.0.0.1 registry-1.docker.io" >> /etc/hosts
+    echo "127.0.0.1 index.docker.io" >> /etc/hosts
+    echo "127.0.0.1 docker.io" >> /etc/hosts
+    echo "127.0.0.1 production.cloudflare.docker.com" >> /etc/hosts
+    echo "127.0.0.1 auth.docker.io" >> /etc/hosts
     
     # Reload Docker configuration if possible
     if command -v systemctl >/dev/null 2>&1 && systemctl is-system-running >/dev/null 2>&1; then
@@ -516,13 +531,15 @@ else
 {
     "registry-mirrors": [
         "http://hub-mirror.c.163.com",
-        "http://docker.mirrors.ustc.edu.cn",
-        "http://mirror.baidubce.com"
+        "http://docker.mirrors.ustc.edu.cn"
     ],
     "insecure-registries": [
         "hub-mirror.c.163.com",
         "docker.mirrors.ustc.edu.cn",
-        "mirror.baidubce.com"
+        "mirror.baidubce.com",
+        "registry-1.docker.io",
+        "index.docker.io",
+        "docker.io"
     ],
     "storage-driver": "vfs",
     "iptables": false,
@@ -530,11 +547,24 @@ else
     "ip-forward": false,
     "ip-masq": false,
     "userland-proxy": false,
-    "max-concurrent-downloads": 3,
-    "max-download-attempts": 5,
-    "dns": ["8.8.8.8", "114.114.114.114"]
+    "max-concurrent-downloads": 1,
+    "max-download-attempts": 3,
+    "dns": ["8.8.8.8", "114.114.114.114"],
+    "live-restore": false,
+    "experimental": false,
+    "features": {
+        "buildkit": false
+    }
 }
 EOF
+    
+    # Add hosts file entries to block Docker Hub and force mirror usage
+    echo "🔧 Configuring hosts file to force mirror usage..."
+    echo "127.0.0.1 registry-1.docker.io" >> /etc/hosts
+    echo "127.0.0.1 index.docker.io" >> /etc/hosts
+    echo "127.0.0.1 docker.io" >> /etc/hosts
+    echo "127.0.0.1 production.cloudflare.docker.com" >> /etc/hosts
+    echo "127.0.0.1 auth.docker.io" >> /etc/hosts
     
     # Reload Docker configuration if possible
     if command -v systemctl >/dev/null 2>&1 && systemctl is-system-running >/dev/null 2>&1; then
