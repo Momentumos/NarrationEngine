@@ -73,6 +73,10 @@ fi
 echo "📦 Step 1: Updating system packages..."
 export DEBIAN_FRONTEND=noninteractive
 
+# Configure Ubuntu mirrors for faster package downloads
+echo "🔧 Configuring Ubuntu mirrors for faster downloads..."
+sed -i 's|http://.*.ubuntu.com|http://mirrors.ustc.edu.cn|g' /etc/apt/sources.list
+
 # Handle potential cloud-init conflicts during package installation
 echo "🔧 Preparing system for package installation..."
 # Wait for any ongoing cloud-init processes to complete
