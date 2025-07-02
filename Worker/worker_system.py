@@ -552,11 +552,15 @@ class VoiceSelector:
                     logger.info(f"Random male voice selected based on target_gender '{target_gender}': {selected_voice}")
                     return selected_voice
                 else:
-                    logger.info(f"Unrecognized target_gender '{target_gender}', using completely random voice")
+                    logger.info(f"Unrecognized target_gender '{target_gender}', randomly choosing gender")
             
-            # Fallback to completely random voice
-            selected_voice = random.choice(VoiceSelector.AVAILABLE_VOICES)
-            logger.info(f"Random voice selection - selected voice: {selected_voice}")
+            # When no target_gender or unrecognized, randomly choose a gender first, then a voice from that gender
+            if random.choice([True, False]):  # Randomly choose between male and female
+                selected_voice = random.choice(VoiceSelector.FEMALE_VOICES)
+                logger.info(f"Random gender selection chose female voice: {selected_voice}")
+            else:
+                selected_voice = random.choice(VoiceSelector.MALE_VOICES)
+                logger.info(f"Random gender selection chose male voice: {selected_voice}")
             return selected_voice
         else:
             # Consider target_gender when using default voice configuration
