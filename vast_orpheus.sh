@@ -453,9 +453,14 @@ if [ -f /usr/bin/nvidia-container-runtime ]; then
         }
     },
     "registry-mirrors": [
-        "https://docker.mirrors.ustc.edu.cn",
-        "https://hub-mirror.c.163.com",
-        "https://mirror.baidubce.com"
+        "http://hub-mirror.c.163.com",
+        "http://docker.mirrors.ustc.edu.cn",
+        "http://mirror.baidubce.com"
+    ],
+    "insecure-registries": [
+        "hub-mirror.c.163.com",
+        "docker.mirrors.ustc.edu.cn",
+        "mirror.baidubce.com"
     ],
     "storage-driver": "vfs",
     "iptables": false,
@@ -464,7 +469,8 @@ if [ -f /usr/bin/nvidia-container-runtime ]; then
     "ip-masq": false,
     "userland-proxy": false,
     "max-concurrent-downloads": 3,
-    "max-download-attempts": 5
+    "max-download-attempts": 5,
+    "dns": ["8.8.8.8", "114.114.114.114"]
 }
 EOF
     
@@ -497,9 +503,14 @@ else
     cat > /etc/docker/daemon.json << 'EOF'
 {
     "registry-mirrors": [
-        "https://docker.mirrors.ustc.edu.cn",
-        "https://hub-mirror.c.163.com",
-        "https://mirror.baidubce.com"
+        "http://hub-mirror.c.163.com",
+        "http://docker.mirrors.ustc.edu.cn",
+        "http://mirror.baidubce.com"
+    ],
+    "insecure-registries": [
+        "hub-mirror.c.163.com",
+        "docker.mirrors.ustc.edu.cn",
+        "mirror.baidubce.com"
     ],
     "storage-driver": "vfs",
     "iptables": false,
@@ -508,7 +519,8 @@ else
     "ip-masq": false,
     "userland-proxy": false,
     "max-concurrent-downloads": 3,
-    "max-download-attempts": 5
+    "max-download-attempts": 5,
+    "dns": ["8.8.8.8", "114.114.114.114"]
 }
 EOF
     
