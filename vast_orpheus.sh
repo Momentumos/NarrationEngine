@@ -682,17 +682,23 @@ else
     exit 1
 fi
 
-# Build and start the Docker containers using GPU docker-compose
-echo "🏗️ Building Docker images..."
-# Disable BuildKit for compatibility with containerized environments like Vast.ai
-export DOCKER_BUILDKIT=0
-export COMPOSE_DOCKER_CLI_BUILD=0
+# Check if main image is already built (orpheus-fastapi is the main container name)
+echo "🔍 Checking if Docker image is already built..."
+IMAGE_EXISTS=$(docker images -q orpheus-fastapi)
 
-if [ "$COMPOSE_FILE" = "docker-compose-gpu.yml" ]; then
-    /usr/local/bin/docker-compose-wrapper -f docker-compose-gpu.yml build --no-cache
+if [ -n "$IMAGE_EXISTS" ]; then
+    echo "✅ Docker image already exists, skipping build"
 else
-    /usr/local/bin/docker-compose-wrapper build --no-cache
+    echo "🏗️ Docker image not found, building now..."
+    export DOCKER_BUILDKIT=0
+    export COMPOSE_DOCKER_CLI_BUILD=0
+    if [ "$COMPOSE_FILE" = "docker-compose-gpu.yml" ]; then
+        /usr/local/bin/docker-compose-wrapper -f docker-compose-gpu.yml build --no-cache
+    else
+        /usr/local/bin/docker-compose-wrapper build --no-cache
+    fi
 fi
+
 
 echo "🚀 Starting Docker containers with GPU support..."
 # Check if containers are already running
