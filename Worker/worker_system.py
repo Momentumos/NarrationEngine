@@ -525,6 +525,10 @@ class VoiceSelector:
         "zoe"
     ]
     
+    # Gender-based voice categorization
+    FEMALE_VOICES = ["tara", "leah", "jess", "mia", "zoe"]
+    MALE_VOICES = ["leo", "dan", "zac"]
+    
     @staticmethod
     def get_voice(config: WorkerConfig, target_gender: Optional[str] = None) -> str:
         """
@@ -532,18 +536,50 @@ class VoiceSelector:
         
         Args:
             config: WorkerConfig instance
-            target_gender: Target gender preference (ignored if USE_RANDOM_VOICE is True)
+            target_gender: Target gender preference ('male', 'female', or None)
             
         Returns:
             str: Selected voice name
         """
         if config.use_random_voice:
-            # Use completely random voice, ignoring target_gender
+            # Consider target_gender when selecting random voice
+            if target_gender:
+                gender_lower = target_gender.lower().strip()
+                if gender_lower in ['female', 'woman', 'girl', 'f']:
+                    selected_voice = random.choice(VoiceSelector.FEMALE_VOICES)
+                    logger.info(f"Random female voice selected based on target_gender '{target_gender}': {selected_voice}")
+                    return selected_voice
+                elif gender_lower in ['male', 'man', 'boy', 'm']:
+                    selected_voice = random.choice(VoiceSelector.MALE_VOICES)
+                    logger.info(f"Random male voice selected based on target_gender '{target_gender}': {selected_voice}")
+                    return selected_voice
+                else:
+                    logger.info(f"Unrecognized target_gender '{target_gender}', using completely random voice")
+            
+            # Fallback to completely random voice
             selected_voice = random.choice(VoiceSelector.AVAILABLE_VOICES)
-            logger.info(f"Random voice selection enabled - selected voice: {selected_voice}")
+            logger.info(f"Random voice selection - selected voice: {selected_voice}")
             return selected_voice
         else:
-            # Use default voice (could be enhanced to consider target_gender in the future)
+            # Consider target_gender when using default voice configuration
+            if target_gender:
+                gender_lower = target_gender.lower().strip()
+                if gender_lower in ['female', 'woman', 'girl', 'f']:
+                    # Use a default female voice if configured voice doesn't match gender preference
+                    if config.voice not in VoiceSelector.FEMALE_VOICES:
+                        selected_voice = VoiceSelector.FEMALE_VOICES[0]  # Default to first female voice
+                        logger.info(f"Target gender is female, overriding default voice with: {selected_voice}")
+                        return selected_voice
+                elif gender_lower in ['male', 'man', 'boy', 'm']:
+                    # Use a default male voice if configured voice doesn't match gender preference
+                    if config.voice not in VoiceSelector.MALE_VOICES:
+                        selected_voice = VoiceSelector.MALE_VOICES[0]  # Default to first male voice
+                        logger.info(f"Target gender is male, overriding default voice with: {selected_voice}")
+                        return selected_voice
+                else:
+                    logger.info(f"Unrecognized target_gender '{target_gender}', using configured default voice")
+            
+            # Use configured default voice
             logger.info(f"Using default voice: {config.voice}")
             return config.voice
 
