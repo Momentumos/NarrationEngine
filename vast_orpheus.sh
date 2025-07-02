@@ -73,25 +73,6 @@ fi
 echo "📦 Step 1: Updating system packages..."
 export DEBIAN_FRONTEND=noninteractive
 
-# Configure Ubuntu mirrors for faster package downloads in China
-echo "🔧 Configuring Ubuntu mirrors for faster downloads in China..."
-sed -i 's|http://.*.ubuntu.com|http://mirrors.ustc.edu.cn|g' /etc/apt/sources.list
-sed -i 's|https://.*.ubuntu.com|http://mirrors.ustc.edu.cn|g' /etc/apt/sources.list
-# Also configure additional mirrors as backup
-sed -i 's|security.ubuntu.com|mirrors.ustc.edu.cn|g' /etc/apt/sources.list
-
-# Configure DNS to avoid network interference
-echo "🔧 Configuring DNS for better connectivity..."
-echo "nameserver 8.8.8.8" > /etc/resolv.conf
-echo "nameserver 114.114.114.114" >> /etc/resolv.conf
-echo "nameserver 1.1.1.1" >> /etc/resolv.conf
-
-# Disable IPv6 to avoid connectivity issues
-echo "🔧 Disabling IPv6 to improve connectivity..."
-echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
-echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf
-sysctl -p 2>/dev/null || true
-
 # Handle potential cloud-init conflicts during package installation
 echo "🔧 Preparing system for package installation..."
 # Wait for any ongoing cloud-init processes to complete
@@ -464,42 +445,14 @@ if [ -f /usr/bin/nvidia-container-runtime ]; then
             "runtimeArgs": []
         }
     },
-    "registry-mirrors": [
-        "http://hub-mirror.c.163.com",
-        "http://docker.mirrors.ustc.edu.cn"
-    ],
-    "insecure-registries": [
-        "hub-mirror.c.163.com",
-        "docker.mirrors.ustc.edu.cn",
-        "mirror.baidubce.com",
-        "registry-1.docker.io",
-        "index.docker.io",
-        "docker.io"
-    ],
     "storage-driver": "vfs",
     "iptables": false,
     "bridge": "none",
     "ip-forward": false,
     "ip-masq": false,
-    "userland-proxy": false,
-    "max-concurrent-downloads": 1,
-    "max-download-attempts": 3,
-    "dns": ["8.8.8.8", "114.114.114.114"],
-    "live-restore": false,
-    "experimental": false,
-    "features": {
-        "buildkit": false
-    }
+    "userland-proxy": false
 }
 EOF
-    
-    # Add hosts file entries to block Docker Hub and force mirror usage
-    echo "🔧 Configuring hosts file to force mirror usage..."
-    echo "127.0.0.1 registry-1.docker.io" >> /etc/hosts
-    echo "127.0.0.1 index.docker.io" >> /etc/hosts
-    echo "127.0.0.1 docker.io" >> /etc/hosts
-    echo "127.0.0.1 production.cloudflare.docker.com" >> /etc/hosts
-    echo "127.0.0.1 auth.docker.io" >> /etc/hosts
     
     # Reload Docker configuration if possible
     if command -v systemctl >/dev/null 2>&1 && systemctl is-system-running >/dev/null 2>&1; then
@@ -525,67 +478,6 @@ EOF
     echo "✅ NVIDIA Docker runtime configured"
 else
     echo "⚠️  NVIDIA container runtime not found, using default Docker runtime"
-    # Create Docker daemon configuration with registry mirrors for better connectivity
-    mkdir -p /etc/docker
-    cat > /etc/docker/daemon.json << 'EOF'
-{
-    "registry-mirrors": [
-        "http://hub-mirror.c.163.com",
-        "http://docker.mirrors.ustc.edu.cn"
-    ],
-    "insecure-registries": [
-        "hub-mirror.c.163.com",
-        "docker.mirrors.ustc.edu.cn",
-        "mirror.baidubce.com",
-        "registry-1.docker.io",
-        "index.docker.io",
-        "docker.io"
-    ],
-    "storage-driver": "vfs",
-    "iptables": false,
-    "bridge": "none",
-    "ip-forward": false,
-    "ip-masq": false,
-    "userland-proxy": false,
-    "max-concurrent-downloads": 1,
-    "max-download-attempts": 3,
-    "dns": ["8.8.8.8", "114.114.114.114"],
-    "live-restore": false,
-    "experimental": false,
-    "features": {
-        "buildkit": false
-    }
-}
-EOF
-    
-    # Add hosts file entries to block Docker Hub and force mirror usage
-    echo "🔧 Configuring hosts file to force mirror usage..."
-    echo "127.0.0.1 registry-1.docker.io" >> /etc/hosts
-    echo "127.0.0.1 index.docker.io" >> /etc/hosts
-    echo "127.0.0.1 docker.io" >> /etc/hosts
-    echo "127.0.0.1 production.cloudflare.docker.com" >> /etc/hosts
-    echo "127.0.0.1 auth.docker.io" >> /etc/hosts
-    
-    # Reload Docker configuration if possible
-    if command -v systemctl >/dev/null 2>&1 && systemctl is-system-running >/dev/null 2>&1; then
-        # System has systemd and it's running
-        systemctl reload docker 2>/dev/null || systemctl restart docker 2>/dev/null || true
-    elif command -v service >/dev/null 2>&1; then
-        # Use service command for non-systemd systems
-        service docker restart 2>/dev/null || true
-    else
-        # Send HUP signal to dockerd to reload config
-        pkill -HUP dockerd 2>/dev/null || true
-    fi
-    
-    # Wait for Docker to be ready after config change
-    sleep 5
-    for i in {1..10}; do
-        if docker info > /dev/null 2>&1; then
-            break
-        fi
-        sleep 2
-    done
 fi
 
 # Verify Docker is working
@@ -606,8 +498,8 @@ fi
 
 # Create application directory
 echo "📁 Setting up application directory..."
-mkdir -p /workspace/narration-engine
-cd /workspace/narration-engine
+mkdir -p /workspace/orpheus-fastapi
+cd /workspace/orpheus-fastapi
 
 # Clone the repository
 echo "📥 Cloning repository..."
@@ -618,7 +510,7 @@ else
     echo "📥 Cloning fresh repository..."
     # Remove any existing files first
     rm -rf * .[^.]* 2>/dev/null || true
-    git clone https://github.com/momentumos/NarrationEngine .
+    git clone https://github.com/Lex-au/Orpheus-FastAPI .
 fi
 
 # STEP 4: Copy .env.example to .env
@@ -828,7 +720,7 @@ if [ "$COMPOSE_FILE" = "docker-compose-gpu.yml" ]; then
     cat > /etc/supervisor/conf.d/orpheus-docker.conf << 'EOF'
 [program:orpheus-docker]
 command=/usr/local/bin/docker-compose-wrapper -f docker-compose-gpu.yml up --no-recreate
-directory=/workspace/narration-engine
+directory=/workspace/orpheus-fastapi
 user=root
 autostart=true
 autorestart=true
@@ -842,7 +734,7 @@ else
     cat > /etc/supervisor/conf.d/orpheus-docker.conf << 'EOF'
 [program:orpheus-docker]
 command=/usr/local/bin/docker-compose-wrapper up --no-recreate
-directory=/workspace/narration-engine
+directory=/workspace/orpheus-fastapi
 user=root
 autostart=true
 autorestart=true
@@ -880,14 +772,14 @@ server {
     
     # Serve static files directly from Docker volume
     location /static/ {
-        alias /workspace/narration-engine/static/;
+        alias /workspace/orpheus-fastapi/static/;
         expires 1d;
         add_header Cache-Control "public, immutable";
     }
     
     # Serve generated audio files from Docker volume
     location /outputs/ {
-        alias /workspace/narration-engine/outputs/;
+        alias /workspace/orpheus-fastapi/outputs/;
         expires 1h;
         add_header Cache-Control "public";
     }
