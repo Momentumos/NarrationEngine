@@ -498,8 +498,8 @@ fi
 
 # Create application directory
 echo "📁 Setting up application directory..."
-mkdir -p /workspace/orpheus-fastapi
-cd /workspace/orpheus-fastapi
+mkdir -p /workspace/narration-engine
+cd /workspace/narration-engine
 
 # Clone the repository
 echo "📥 Cloning repository..."
@@ -510,7 +510,7 @@ else
     echo "📥 Cloning fresh repository..."
     # Remove any existing files first
     rm -rf * .[^.]* 2>/dev/null || true
-    git clone https://github.com/Lex-au/Orpheus-FastAPI .
+    git clone https://github.com/momentumos/NarrationEngine .
 fi
 
 # STEP 4: Copy .env.example to .env
@@ -720,7 +720,7 @@ if [ "$COMPOSE_FILE" = "docker-compose-gpu.yml" ]; then
     cat > /etc/supervisor/conf.d/orpheus-docker.conf << 'EOF'
 [program:orpheus-docker]
 command=/usr/local/bin/docker-compose-wrapper -f docker-compose-gpu.yml up --no-recreate
-directory=/workspace/orpheus-fastapi
+directory=/workspace/narration-engine
 user=root
 autostart=true
 autorestart=true
@@ -734,7 +734,7 @@ else
     cat > /etc/supervisor/conf.d/orpheus-docker.conf << 'EOF'
 [program:orpheus-docker]
 command=/usr/local/bin/docker-compose-wrapper up --no-recreate
-directory=/workspace/orpheus-fastapi
+directory=/workspace/narration-engine
 user=root
 autostart=true
 autorestart=true
@@ -772,14 +772,14 @@ server {
     
     # Serve static files directly from Docker volume
     location /static/ {
-        alias /workspace/orpheus-fastapi/static/;
+        alias /workspace/narration-engine/static/;
         expires 1d;
         add_header Cache-Control "public, immutable";
     }
     
     # Serve generated audio files from Docker volume
     location /outputs/ {
-        alias /workspace/orpheus-fastapi/outputs/;
+        alias /workspace/narration-engine/outputs/;
         expires 1h;
         add_header Cache-Control "public";
     }
