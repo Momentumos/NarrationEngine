@@ -268,30 +268,31 @@ setup_env_file() {
     # Find .env.example in multiple locations
     if [[ -f ".env.example" ]]; then
         env_example=".env.example"
+    elif [[ -f "Worker/.env.example" ]]; then
+        env_example="Worker/.env.example"
+        env_file="Worker/.env"
     elif [[ -f "NarrationEngine/Worker/.env.example" ]]; then
         env_example="NarrationEngine/Worker/.env.example"
+        env_file="NarrationEngine/Worker/.env"
     else
-        print_status "error" ".env.example not found in current directory or NarrationEngine/Worker/"
+        print_status "error" ".env.example not found in current directory, Worker/, or NarrationEngine/Worker/"
         return 1
     fi
     
     print_status "info" "Using .env.example file: $env_example"
+    print_status "info" "Target .env file: $env_file"
     
+    # Always copy .env.example to .env (overwrite if exists)
     if [[ -f "$env_file" ]]; then
-        print_status "warning" "$env_file already exists"
-        read -p "Do you want to overwrite it? (y/N): " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            print_status "info" "${NOTE} Keeping existing .env file, but will update with environment variables"
-        else
-            # Create fresh copy from example
-            cp "$env_example" "$env_file"
-            print_status "success" "Created fresh $env_file from $env_example"
-        fi
+        print_status "warning" "$env_file already exists - will be overwritten with values from $env_example"
+    fi
+    
+    # Create fresh copy from example
+    if cp "$env_example" "$env_file"; then
+        print_status "success" "Copied $env_example to $env_file"
     else
-        # Create from example
-        cp "$env_example" "$env_file"
-        print_status "success" "Created $env_file from $env_example"
+        print_status "error" "Failed to copy $env_example to $env_file"
+        return 1
     fi
     
     # Update environment variables from system environment
@@ -347,7 +348,7 @@ setup_env_file() {
         print_status "success" "Updated ${#updated_vars[@]} environment variables from system:"
         for var in "${updated_vars[@]}"; do
             # Don't print sensitive values
-            if [[ "$var" == *"KEY"* ]] || [[ "$var" == *"SECRET"* ]]; then
+            if [[ "$var" == *"KEY"* ]] || [[ "$var" == *"SECRET"* ]] || [[ "$var" == *"TOKEN"* ]]; then
                 echo "   - $var=***"
             else
                 echo "   - $var=${!var}"
@@ -355,7 +356,7 @@ setup_env_file() {
         done
     else
         print_status "info" "${NOTE} No system environment variables found to update"
-        echo "   Please edit .env file with your actual configuration values"
+        echo "   Please set environment variables or edit .env file with your actual configuration values"
     fi
     
     return 0
