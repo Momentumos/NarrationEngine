@@ -36,7 +36,7 @@ RUN python3 -m venv /app/venv
 ENV PATH="/app/venv/bin:$PATH"
 
 # Install PyTorch with CUDA support and other dependencies
-RUN pip3 install --no-cache-dir --timeout 300 --retries 3 torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 && \
+RUN pip3 install --no-cache-dir --timeout 300 --retries 3 --trusted-host download.pytorch.org --disable-pip-version-check torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 && \
     pip3 install --no-cache-dir --timeout 300 --retries 3 -r requirements.txt
 
 # Copy project files

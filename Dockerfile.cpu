@@ -36,7 +36,7 @@ RUN python3 -m venv /app/venv
 ENV PATH="/app/venv/bin:$PATH"
 
 # Install CPU-only PyTorch and other dependencies
-RUN pip3 install --no-cache-dir --timeout 300 --retries 3 torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
+RUN pip3 install --no-cache-dir --timeout 300 --retries 3 --trusted-host download.pytorch.org --disable-pip-version-check torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu && \
     pip3 install --no-cache-dir --timeout 300 --retries 3 -r requirements.txt
 
 # Copy project files
