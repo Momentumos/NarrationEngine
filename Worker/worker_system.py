@@ -53,7 +53,7 @@ class WorkerConfig:
     
     # TTS Configuration
     voice: str = "tara"
-    use_random_voice: bool = os.getenv('USE_RANDOM_VOICE', 'false').lower() in ('true', '1', 'yes', 'on')
+    use_random_voice: bool = os.getenv('USE_RANDOM_VOICE', 'true').lower() in ('true', '1', 'yes', 'on')
     
     # S3 Configuration
     aws_access_key_id: str = os.getenv('AWS_ACCESS_KEY_ID', '')
@@ -513,20 +513,18 @@ class DiscordNotifier:
 class VoiceSelector:
     """Handles voice selection logic"""
     
-    # Available voices for TTS - you can expand this list based on your TTS server's capabilities
+    # Available voices for TTS - 6 main voices as requested
     AVAILABLE_VOICES = [
         "tara",
         "leah", 
-        "jess",
         "leo",
         "dan",
         "mia",
-        "zac",
-        "zoe"
+        "zac"
     ]
     
     # Gender-based voice categorization
-    FEMALE_VOICES = ["tara", "leah", "jess", "mia", "zoe"]
+    FEMALE_VOICES = ["tara", "leah", "mia"]
     MALE_VOICES = ["leo", "dan", "zac"]
     
     @staticmethod
