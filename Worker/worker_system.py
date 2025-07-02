@@ -567,15 +567,15 @@ class VoiceSelector:
             if target_gender:
                 gender_lower = target_gender.lower().strip()
                 if gender_lower in ['female', 'woman', 'girl', 'f']:
-                    # Use a default female voice if configured voice doesn't match gender preference
+                    # Use a random female voice if configured voice doesn't match gender preference
                     if config.voice not in VoiceSelector.FEMALE_VOICES:
-                        selected_voice = VoiceSelector.FEMALE_VOICES[0]  # Default to first female voice
+                        selected_voice = random.choice(VoiceSelector.FEMALE_VOICES)  # Random female voice
                         logger.info(f"Target gender is female, overriding default voice with: {selected_voice}")
                         return selected_voice
                 elif gender_lower in ['male', 'man', 'boy', 'm']:
-                    # Use a default male voice if configured voice doesn't match gender preference
+                    # Use a random male voice if configured voice doesn't match gender preference
                     if config.voice not in VoiceSelector.MALE_VOICES:
-                        selected_voice = VoiceSelector.MALE_VOICES[0]  # Default to first male voice
+                        selected_voice = random.choice(VoiceSelector.MALE_VOICES)  # Random male voice
                         logger.info(f"Target gender is male, overriding default voice with: {selected_voice}")
                         return selected_voice
                 else:
