@@ -73,9 +73,12 @@ fi
 echo "📦 Step 1: Updating system packages..."
 export DEBIAN_FRONTEND=noninteractive
 
-# Configure Ubuntu mirrors for faster package downloads
-echo "🔧 Configuring Ubuntu mirrors for faster downloads..."
+# Configure Ubuntu mirrors for faster package downloads in China
+echo "🔧 Configuring Ubuntu mirrors for faster downloads in China..."
 sed -i 's|http://.*.ubuntu.com|http://mirrors.ustc.edu.cn|g' /etc/apt/sources.list
+sed -i 's|https://.*.ubuntu.com|http://mirrors.ustc.edu.cn|g' /etc/apt/sources.list
+# Also configure additional mirrors as backup
+sed -i 's|security.ubuntu.com|mirrors.ustc.edu.cn|g' /etc/apt/sources.list
 
 # Handle potential cloud-init conflicts during package installation
 echo "🔧 Preparing system for package installation..."
@@ -449,12 +452,19 @@ if [ -f /usr/bin/nvidia-container-runtime ]; then
             "runtimeArgs": []
         }
     },
+    "registry-mirrors": [
+        "https://docker.mirrors.ustc.edu.cn",
+        "https://hub-mirror.c.163.com",
+        "https://mirror.baidubce.com"
+    ],
     "storage-driver": "vfs",
     "iptables": false,
     "bridge": "none",
     "ip-forward": false,
     "ip-masq": false,
-    "userland-proxy": false
+    "userland-proxy": false,
+    "max-concurrent-downloads": 3,
+    "max-download-attempts": 5
 }
 EOF
     
@@ -482,6 +492,46 @@ EOF
     echo "✅ NVIDIA Docker runtime configured"
 else
     echo "⚠️  NVIDIA container runtime not found, using default Docker runtime"
+    # Create Docker daemon configuration with registry mirrors for better connectivity
+    mkdir -p /etc/docker
+    cat > /etc/docker/daemon.json << 'EOF'
+{
+    "registry-mirrors": [
+        "https://docker.mirrors.ustc.edu.cn",
+        "https://hub-mirror.c.163.com",
+        "https://mirror.baidubce.com"
+    ],
+    "storage-driver": "vfs",
+    "iptables": false,
+    "bridge": "none",
+    "ip-forward": false,
+    "ip-masq": false,
+    "userland-proxy": false,
+    "max-concurrent-downloads": 3,
+    "max-download-attempts": 5
+}
+EOF
+    
+    # Reload Docker configuration if possible
+    if command -v systemctl >/dev/null 2>&1 && systemctl is-system-running >/dev/null 2>&1; then
+        # System has systemd and it's running
+        systemctl reload docker 2>/dev/null || systemctl restart docker 2>/dev/null || true
+    elif command -v service >/dev/null 2>&1; then
+        # Use service command for non-systemd systems
+        service docker restart 2>/dev/null || true
+    else
+        # Send HUP signal to dockerd to reload config
+        pkill -HUP dockerd 2>/dev/null || true
+    fi
+    
+    # Wait for Docker to be ready after config change
+    sleep 5
+    for i in {1..10}; do
+        if docker info > /dev/null 2>&1; then
+            break
+        fi
+        sleep 2
+    done
 fi
 
 # Verify Docker is working

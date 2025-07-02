@@ -35,8 +35,10 @@ COPY --chown=appuser:appuser requirements.txt ./requirements.txt
 RUN python3 -m venv /app/venv
 ENV PATH="/app/venv/bin:$PATH"
 
-# Install PyTorch with CUDA support and other dependencies
-RUN pip3 install --no-cache-dir --timeout 300 --retries 3 --trusted-host download.pytorch.org --disable-pip-version-check torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 && \
+# Install PyTorch with CUDA support and other dependencies (optimized for China)
+RUN pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && \
+    pip3 config set global.trusted-host pypi.tuna.tsinghua.edu.cn && \
+    pip3 install --no-cache-dir --timeout 300 --retries 3 --trusted-host download.pytorch.org --disable-pip-version-check torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 && \
     pip3 install --no-cache-dir --timeout 300 --retries 3 -r requirements.txt
 
 # Copy project files
