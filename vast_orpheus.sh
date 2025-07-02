@@ -80,6 +80,18 @@ sed -i 's|https://.*.ubuntu.com|http://mirrors.ustc.edu.cn|g' /etc/apt/sources.l
 # Also configure additional mirrors as backup
 sed -i 's|security.ubuntu.com|mirrors.ustc.edu.cn|g' /etc/apt/sources.list
 
+# Configure DNS to avoid network interference
+echo "🔧 Configuring DNS for better connectivity..."
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+echo "nameserver 114.114.114.114" >> /etc/resolv.conf
+echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+
+# Disable IPv6 to avoid connectivity issues
+echo "🔧 Disabling IPv6 to improve connectivity..."
+echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
+echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf
+sysctl -p 2>/dev/null || true
+
 # Handle potential cloud-init conflicts during package installation
 echo "🔧 Preparing system for package installation..."
 # Wait for any ongoing cloud-init processes to complete
