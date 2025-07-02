@@ -1,0 +1,32 @@
+[Unit]
+Description=Orpheus Worker System
+After=network.target
+Wants=network.target
+
+[Service]
+Type=forking
+User=www-data
+Group=www-data
+WorkingDirectory=/path/to/your/Worker
+ExecStart=/usr/bin/python3 /path/to/your/Worker/daemon_worker.py start --pidfile=/var/run/orpheus-worker.pid --logfile=/var/log/orpheus-worker.log
+ExecStop=/usr/bin/python3 /path/to/your/Worker/daemon_worker.py stop --pidfile=/var/run/orpheus-worker.pid
+ExecReload=/usr/bin/python3 /path/to/your/Worker/daemon_worker.py restart --pidfile=/var/run/orpheus-worker.pid
+PIDFile=/var/run/orpheus-worker.pid
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/path/to/your/Worker /var/log /var/run
+
+# Environment
+Environment=PYTHONPATH=/path/to/your/Worker
+EnvironmentFile=-/path/to/your/Worker/.env
+
+[Install]
+WantedBy=multi-user.target
