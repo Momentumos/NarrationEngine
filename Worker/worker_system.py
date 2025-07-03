@@ -352,9 +352,9 @@ class DiscordNotifier:
             # Generate random color for the embed
             random_color = random.randint(0x000000, 0xFFFFFF)
             
-            # Create Discord embed with person's name as title
+            # Create Discord embed without person's name as title
             embed = {
-                "title": person_name,
+                "title": "Narration Generated",
                 "color": random_color,
                 "fields": [
                     {
@@ -369,55 +369,45 @@ class DiscordNotifier:
                 }
             }
             
-            # Handle narration text - add it to the Details field or as separate field
+            # Always show the full narration text - use file attachment if too long for embed
             if full_text:
-                # Check if adding the text to Details field would exceed Discord's limit
-                current_details = embed["fields"][0]["value"]
-                text_preview = full_text[:200] + "..." if len(full_text) > 200 else full_text
-                
-                # Try to add text to the Details field first
-                details_with_text = f"{current_details}\n**Narration Text:** {text_preview}"
-                
-                if len(details_with_text) <= 1024:  # Discord field limit
-                    # Update the Details field to include the text
-                    embed["fields"][0]["value"] = details_with_text
+                # Check if full text fits in a Discord field (max 1024 characters with formatting)
+                formatted_text = f"```{full_text}```"
+                if len(formatted_text) <= 1024:
+                    # Full text fits in embed field
+                    embed["fields"].append({
+                        "name": "Narration Text",
+                        "value": formatted_text,
+                        "inline": False
+                    })
                 else:
-                    # Add as separate field if it fits, otherwise use file attachment
-                    if len(full_text) <= 900:  # Leave room for formatting
-                        embed["fields"].append({
-                            "name": "Narration Text",
-                            "value": f"```{full_text}```",
-                            "inline": False
-                        })
-                    else:
-                        # Text is too long, use file attachment
-                        embed["fields"].append({
-                            "name": "Narration Text",
-                            "value": "📄 Complete text attached as file (too long for embed)",
-                            "inline": False
-                        })
-                        
-                        # Create temporary text file
-                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                        temp_text_file = f"temp_discord_text_{narration_id}_{timestamp}.txt"
-                        
-                        # Ensure outputs directory exists
-                        os.makedirs("outputs", exist_ok=True)
-                        temp_text_path = os.path.join("outputs", temp_text_file)
-                        
-                        # Save text file
-                        with open(temp_text_path, 'w', encoding='utf-8') as f:
-                            f.write(f"Narration ID: {narration_id}\n")
-                            f.write(f"Person: {person_name}\n")
-                            f.write(f"Gender: {target_gender}\n")
-                            f.write(f"Voice: {chosen_voice}\n")
-                            f.write(f"Duration: {duration_str}\n")
-                            f.write(f"Generation Time: {generation_time_str}\n")
-                            f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                            f.write("=" * 50 + "\n\n")
-                            f.write(full_text)
-                        
-                        logger.info(f"Created text file for Discord attachment: {temp_text_path}")
+                    # Text is too long for embed, use file attachment
+                    embed["fields"].append({
+                        "name": "Narration Text",
+                        "value": "📄 Complete text attached as file (too long for embed)",
+                        "inline": False
+                    })
+                    
+                    # Create temporary text file with full content
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    temp_text_file = f"temp_discord_text_{narration_id}_{timestamp}.txt"
+                    
+                    # Ensure outputs directory exists
+                    os.makedirs("outputs", exist_ok=True)
+                    temp_text_path = os.path.join("outputs", temp_text_file)
+                    
+                    # Save text file with full narration text
+                    with open(temp_text_path, 'w', encoding='utf-8') as f:
+                        f.write(f"Narration ID: {narration_id}\n")
+                        f.write(f"Gender: {target_gender}\n")
+                        f.write(f"Voice: {chosen_voice}\n")
+                        f.write(f"Duration: {duration_str}\n")
+                        f.write(f"Generation Time: {generation_time_str}\n")
+                        f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                        f.write("=" * 50 + "\n\n")
+                        f.write(full_text)
+                    
+                    logger.info(f"Created text file for Discord attachment: {temp_text_path}")
             
             # Download audio file for attachment
             logger.info(f"Downloading audio file from {audio_url} for Discord attachment")
