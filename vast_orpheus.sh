@@ -529,7 +529,7 @@ ORPHEUS_MAX_TOKENS=4096
 ORPHEUS_TEMPERATURE=0.6
 ORPHEUS_TOP_P=0.9
 ORPHEUS_SAMPLE_RATE=24000
-ORPHEUS_MODEL_NAME=Llama-3.2-3B-Instruct-Q4_K_M.gguf
+ORPHEUS_MODEL_NAME=lex-au/Orpheus-3b-FT-Q2_K.gguf
 ORPHEUS_PORT=5005
 ORPHEUS_HOST=0.0.0.0
 EOF
@@ -616,7 +616,7 @@ echo "⚙️ Configuring environment for existing docker-compose.yml..."
 
 # Set default model name if not already configured
 if ! grep -q "^ORPHEUS_MODEL_NAME=" .env; then
-    echo "ORPHEUS_MODEL_NAME=Llama-3.2-3B-Instruct-Q4_K_M.gguf" >> .env
+    echo "ORPHEUS_MODEL_NAME=lex-au/Orpheus-3b-FT-Q2_K.gguf" >> .env
     echo "   ✓ Added default ORPHEUS_MODEL_NAME"
 fi
 

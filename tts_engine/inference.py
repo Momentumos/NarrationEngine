@@ -263,7 +263,7 @@ def generate_tokens_from_api(prompt: str, voice: str = DEFAULT_VOICE, temperatur
     
     # Add model field - this is ignored by many local inference servers for /v1/completions
     # but included for compatibility with OpenAI API and some servers that may use it
-    model_name = os.environ.get("ORPHEUS_MODEL_NAME", "Orpheus-3b-FT-Q8_0.gguf")
+    model_name = os.environ.get("ORPHEUS_MODEL_NAME", "lex-au/Orpheus-3b-FT-Q2_K.gguf")
     payload["model"] = model_name
     
     # Session for connection pooling and retry logic
