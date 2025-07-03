@@ -315,7 +315,7 @@ class DiscordNotifier:
         self.webhook_url = config.discord_webhook_url
     
     async def send_narration_summary(self, session: aiohttp.ClientSession, narration_data: Dict[str, Any], 
-                                   audio_url: str, audio_duration: float, worker_id: int) -> None:
+                                   audio_url: str, audio_duration: float, worker_id: int, generation_time: float = 0.0) -> None:
         """Send a summary of the processed narration to Discord"""
         if not self.webhook_url:
             logger.info("Discord webhook URL not configured, skipping notification")
@@ -339,6 +339,9 @@ class DiscordNotifier:
             duration_seconds = int(audio_duration % 60)
             duration_str = f"{duration_minutes}m {duration_seconds}s" if duration_minutes > 0 else f"{duration_seconds}s"
             
+            # Format generation time
+            generation_time_str = f"{generation_time}s" if generation_time > 0 else "N/A"
+            
             # Generate random color for the embed
             random_color = random.randint(0x000000, 0xFFFFFF)
             
@@ -360,6 +363,11 @@ class DiscordNotifier:
                     {
                         "name": "Audio Duration",
                         "value": duration_str,
+                        "inline": True
+                    },
+                    {
+                        "name": "Generation Time",
+                        "value": generation_time_str,
                         "inline": True
                     }
                 ],
@@ -749,9 +757,13 @@ class Worker:
                 # Extract target_gender from narration data (if available)
                 target_gender = narration_data.get('target_gender', None)
                 
-                # Step 2: Generate TTS audio (WAV format)
+                # Step 2: Generate TTS audio (WAV format) - Track generation time
                 logger.info(f"Worker {self.worker_id}: Generating TTS audio")
+                generation_start_time = time.time()
                 wav_file_path = await api_client.generate_tts(text_content, target_gender)
+                generation_end_time = time.time()
+                generation_time = round(generation_end_time - generation_start_time, 2)
+                logger.info(f"Worker {self.worker_id}: TTS generation completed in {generation_time} seconds")
                 
                 # Step 3: Convert WAV to MP3
                 logger.info(f"Worker {self.worker_id}: Converting WAV to MP3")
@@ -789,7 +801,7 @@ class Worker:
                 # Step 7: Send Discord notification
                 logger.info(f"Worker {self.worker_id}: Sending Discord notification")
                 await self.discord_notifier.send_narration_summary(
-                    api_client.session, narration_data, audio_url, audio_duration, self.worker_id
+                    api_client.session, narration_data, audio_url, audio_duration, self.worker_id, generation_time
                 )
                 
                 logger.info(f"Worker {self.worker_id}: Successfully processed narration {narration_id}")
